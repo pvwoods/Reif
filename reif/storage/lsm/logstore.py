@@ -79,7 +79,7 @@ class LoggingKeyStore():
         fp.close()
 
     def loadSnapshot(self):
-        fp = open(self.snapshotFilePath, "r")
+        fp = open(self.snapshotFilePath, "r+")
         for line in fp:
             k, v = line.strip().split(",")
             self.keyMap.keyToFileOffsets[k] = int(v)

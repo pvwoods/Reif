@@ -13,6 +13,8 @@ class Repl():
         func = instructions[0].lower()
 
         if func == "exit":
+            if self.store:
+                self.store.writeSnapshot()
             exit()
         elif func == "load" and len(instructions) == 2:
             self.store = LoggingKeyStore(instructions[1])

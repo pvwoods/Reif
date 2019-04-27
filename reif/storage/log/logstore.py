@@ -88,4 +88,4 @@ class LoggingKeyStore():
 
     @property
     def snapshotFilePath(self):
-        return "%s.snapshot" % self.filepath
+        return f"{self.filepath}.snapshot"

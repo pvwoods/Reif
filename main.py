@@ -1,5 +1,5 @@
 #! /usr/local/bin/python3
-from reif.storage.lsm.logstore import LoggingKeyStore
+from reif.storage.log.logstore import LoggingKeyStore
 import json
 import random
 
@@ -20,7 +20,9 @@ class Repl():
             self.store = LoggingKeyStore(instructions[1])
             print("DB loaded")
         elif self.store:
-            if func == "snapshot":
+            if func == "keys":
+                print(self.store.keyMap.snapshot())
+            elif func == "snapshot":
                 self.store.writeSnapshot()
                 print("OK")
             elif func == "set" and len(instructions) > 2:

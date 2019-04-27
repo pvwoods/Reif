@@ -1,3 +1,6 @@
+import logging
+import os
+
 class LoggingKeyStoreMap():
     
     def __init__(self):
@@ -25,8 +28,8 @@ class LoggingKeyStoreReader():
         self.fp = open(self.filepath, 'r')
     
     def get(self, offset):
-        self.fp.seek(offset)
-        return self.fp.readline()
+        self.fp.seek(offset, os.SEEK_SET)
+        return self.fp.readline().strip()
 
 class LoggingKeyStoreWriter():
     
@@ -45,21 +48,43 @@ class LoggingKeyStoreWriter():
 class LoggingKeyStore():
     
     def __init__(self, filepath):
+
+        self.filepath = filepath
         self.writer = LoggingKeyStoreWriter(filepath)
         self.reader = LoggingKeyStoreReader(filepath)
         self.keyMap = LoggingKeyStoreMap()
+        
+        if os.path.isfile(self.snapshotFilePath):
+            self.loadSnapshot()
         
     def set(self, key, value):
         bo = self.writer.getCurOffset(key)
         if self.keyMap.setKeyOffset(key, bo):
             self.writer.set(value)
-            print("WROTE %s to %s" % (key, bo))
+            logging.info("WROTE %s to %s" % (key, bo))
         else:
-            print("ERROR WRITING %s" % key) 
+            logging.error("Could not write key %s" % key) 
     
     def get(self, key):
         bo = self.keyMap.getOffset(key)
+        logging.info("Key  %s found at offset %s" % (key, bo))
         if bo < 0:
             return ""
         else:
             return self.reader.get(bo).strip('\n')
+
+    def writeSnapshot(self):
+        fp = open(self.snapshotFilePath, "w+")
+        fp.write(self.keyMap.snapshot())
+        fp.close()
+
+    def loadSnapshot(self):
+        fp = open(self.snapshotFilePath, "r")
+        for line in fp:
+            k, v = line.strip().split(",")
+            self.keyMap.keyToFileOffsets[k] = int(v)
+        fp.close()
+
+    @property
+    def snapshotFilePath(self):
+        return "%s.snapshot" % self.filepath

@@ -1,5 +1,6 @@
 import logging
 import os
+import struct
 
 class LoggingKeyStoreMap():
     
@@ -25,21 +26,21 @@ class LoggingKeyStoreReader():
     
     def __init__(self, filepath):
         self.filepath = filepath
-        self.fp = open(self.filepath, 'r')
+        self.fp = open(self.filepath, 'r+b')
     
     def get(self, offset):
         self.fp.seek(offset, os.SEEK_SET)
-        return self.fp.readline().strip()
+        return self.fp.readline().strip().decode('utf-8')
 
 class LoggingKeyStoreWriter():
     
     def __init__(self, filepath):
         
         self.filepath = filepath
-        self.fp = open(self.filepath, 'a+')
+        self.fp = open(self.filepath, 'a+b', buffering=0)
         
     def set(self, value):
-        self.fp.write(value + "\n")
+        self.fp.write(("%s\n" % value).encode('utf-8'))
         
     def getCurOffset(self, key):
         return self.fp.tell()
@@ -71,7 +72,7 @@ class LoggingKeyStore():
         if bo < 0:
             return ""
         else:
-            return self.reader.get(bo).strip('\n')
+            return self.reader.get(bo)
 
     def writeSnapshot(self):
         fp = open(self.snapshotFilePath, "w+")
